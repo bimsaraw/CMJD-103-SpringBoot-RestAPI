@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ijse.database.dto.ProductDTO;
 import com.ijse.database.entity.Category;
 import com.ijse.database.entity.Product;
 import com.ijse.database.repository.CategoryRepository;
@@ -12,7 +13,7 @@ import com.ijse.database.repository.ProductRepository;
 
 @Service
 public class ProductServiceImpl implements ProductService {
-    
+
     @Autowired
     private ProductRepository productRepository;
 
@@ -25,8 +26,20 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product createProduct(Product product) {
-        return productRepository.save(product);
+    public Product createProduct(ProductDTO productDTO) {
+        Category category = categoryRepository.findById(productDTO.getCategoryId()).orElse(null);
+
+        if (category != null) {
+            Product product = new Product();
+            product.setName(productDTO.getName());
+            product.setPrice(productDTO.getPrice());
+            product.setQty(productDTO.getQty());
+            product.setCategory(category);
+
+            return productRepository.save(product);
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -37,8 +50,8 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product updateProduct(Long id, Product product) {
         Product existingProduct = productRepository.findById(id).orElse(null);
-        
-        if(existingProduct != null) {
+
+        if (existingProduct != null) {
             existingProduct.setName(product.getName());
             existingProduct.setPrice(product.getPrice());
             existingProduct.setQty(product.getQty());
@@ -54,7 +67,7 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> findByCategory(Long id) {
         Category category = categoryRepository.findById(id).orElse(null);
 
-        if(category != null) {
+        if (category != null) {
             return productRepository.findByCategory(category);
         } else {
             return null;
